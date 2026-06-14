@@ -1,0 +1,1056 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CMDT A5 — Network Analysis Report</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f8f7f4;
+    --surface: #ffffff;
+    --fg: #1a1917;
+    --muted: #6b6560;
+    --accent: #c0392b;
+    --accent-soft: #fdf2f1;
+    --accent2: #1a5276;
+    --accent2-soft: #eaf2fb;
+    --border: #e2ddd8;
+    --border-strong: #c8c2bc;
+    --success: #1e6b3a;
+    --success-soft: #edf7f1;
+    --warn: #7d5a00;
+    --warn-soft: #fdf8ec;
+    --mono: 'JetBrains Mono', monospace;
+    --sans: 'Plus Jakarta Sans', sans-serif;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: var(--sans);
+    background: var(--bg);
+    color: var(--fg);
+    font-size: 14px;
+    line-height: 1.65;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ── HEADER ── */
+  .report-header {
+    background: var(--fg);
+    color: #f8f7f4;
+    padding: 36px 32px 28px;
+    border-bottom: 4px solid var(--accent);
+    animation: fadeDown 0.5s ease both;
+  }
+  .header-badge {
+    display: inline-block;
+    font-family: var(--mono);
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    background: var(--accent);
+    color: #fff;
+    padding: 3px 10px;
+    border-radius: 2px;
+    margin-bottom: 12px;
+  }
+  .report-header h1 {
+    font-size: 28px;
+    font-weight: 800;
+    line-height: 1.2;
+    color: #fff;
+    margin-bottom: 6px;
+  }
+  .report-header .subtitle {
+    font-size: 13px;
+    color: #b8b0a8;
+    font-weight: 400;
+  }
+  .meta-row {
+    display: flex;
+    gap: 24px;
+    margin-top: 20px;
+    flex-wrap: wrap;
+  }
+  .meta-item {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  .meta-label {
+    font-family: var(--mono);
+    font-size: 9px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: #8a8078;
+  }
+  .meta-value {
+    font-size: 13px;
+    font-weight: 600;
+    color: #e8e4e0;
+  }
+
+  /* ── TOC ── */
+  .toc-bar {
+    background: var(--accent2);
+    padding: 0 32px;
+    display: flex;
+    gap: 0;
+    flex-wrap: wrap;
+    animation: fadeDown 0.5s 0.1s ease both;
+  }
+  .toc-link {
+    display: block;
+    padding: 10px 14px;
+    font-size: 12px;
+    font-weight: 600;
+    color: #cde;
+    text-decoration: none;
+    border-bottom: 2px solid transparent;
+    transition: color 0.15s, border-color 0.15s;
+    white-space: nowrap;
+  }
+  .toc-link:hover { color: #fff; border-bottom-color: #fff; }
+
+  /* ── MAIN ── */
+  main { padding: 0 32px 48px; max-width: 900px; }
+
+  /* ── SECTION ── */
+  .section {
+    margin-top: 40px;
+    animation: fadeUp 0.5s ease both;
+  }
+  .section:nth-child(1) { animation-delay: 0.15s; }
+  .section:nth-child(2) { animation-delay: 0.2s; }
+  .section:nth-child(3) { animation-delay: 0.25s; }
+  .section:nth-child(4) { animation-delay: 0.3s; }
+  .section:nth-child(5) { animation-delay: 0.35s; }
+
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid var(--accent);
+  }
+  .section-num {
+    font-family: var(--mono);
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--accent);
+    min-width: 28px;
+  }
+  .section-title {
+    font-size: 17px;
+    font-weight: 800;
+    color: var(--fg);
+    letter-spacing: -0.01em;
+  }
+
+  .subsection { margin-top: 24px; }
+  .subsection-title {
+    font-size: 13px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--accent2);
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .subsection-title::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  p { margin-bottom: 10px; color: var(--fg); }
+  ul, ol { padding-left: 20px; margin-bottom: 10px; }
+  li { margin-bottom: 4px; }
+
+  /* ── CALLOUT ── */
+  .callout {
+    border-left: 3px solid var(--accent);
+    background: var(--accent-soft);
+    padding: 12px 16px;
+    border-radius: 0 4px 4px 0;
+    margin: 14px 0;
+    font-size: 13px;
+  }
+  .callout.info {
+    border-color: var(--accent2);
+    background: var(--accent2-soft);
+  }
+  .callout.success {
+    border-color: var(--success);
+    background: var(--success-soft);
+  }
+  .callout.warn {
+    border-color: var(--warn);
+    background: var(--warn-soft);
+  }
+  .callout-label {
+    font-family: var(--mono);
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+    color: var(--accent);
+  }
+  .callout.info .callout-label { color: var(--accent2); }
+  .callout.success .callout-label { color: var(--success); }
+  .callout.warn .callout-label { color: var(--warn); }
+
+  /* ── TABLE ── */
+  .table-wrap { overflow-x: auto; margin: 12px 0; border: 1px solid var(--border); border-radius: 4px; }
+  table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+  thead tr { background: var(--fg); }
+  thead th {
+    padding: 9px 12px;
+    text-align: left;
+    font-family: var(--mono);
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #e8e4e0;
+    white-space: nowrap;
+  }
+  tbody tr:nth-child(even) { background: #f3f1ee; }
+  tbody tr:hover { background: #ebe8e3; }
+  tbody td {
+    padding: 8px 12px;
+    border-top: 1px solid var(--border);
+    vertical-align: top;
+  }
+  td code, td .mono { font-family: var(--mono); font-size: 11.5px; }
+  .tag {
+    display: inline-block;
+    font-family: var(--mono);
+    font-size: 10px;
+    font-weight: 700;
+    padding: 1px 7px;
+    border-radius: 2px;
+    margin: 1px 2px 1px 0;
+  }
+  .tag-red { background: #fde8e8; color: #a11; }
+  .tag-blue { background: #ddeeff; color: #1a3a6b; }
+  .tag-green { background: #dff2e8; color: #145a32; }
+  .tag-grey { background: #ededec; color: #555; }
+  .tag-orange { background: #fef3e0; color: #7d4e00; }
+  .tag-purple { background: #f0eaff; color: #5a2d91; }
+
+  /* ── CODE BLOCK ── */
+  pre {
+    font-family: var(--mono);
+    font-size: 11.5px;
+    background: #1a1917;
+    color: #d4cfca;
+    padding: 16px;
+    border-radius: 4px;
+    overflow-x: auto;
+    line-height: 1.7;
+    margin: 12px 0;
+  }
+  .hl-k { color: #e67e22; }   /* keyword */
+  .hl-v { color: #2ecc71; }   /* value/ip */
+  .hl-c { color: #7f8c8d; }   /* comment */
+  .hl-i { color: #3498db; }   /* interface */
+  .hl-s { color: #f39c12; }   /* string */
+
+  /* ── TOPOLOGY DIAGRAM ── */
+  .topo-diagram {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 24px 20px;
+    margin: 12px 0;
+    font-family: var(--mono);
+    font-size: 12px;
+    line-height: 1.9;
+  }
+  .topo-tier {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    margin-bottom: 2px;
+  }
+  .topo-label {
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+    min-width: 88px;
+    padding-top: 2px;
+  }
+  .topo-nodes { flex: 1; }
+  .node {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background: var(--fg);
+    color: #fff;
+    border-radius: 3px;
+    padding: 3px 8px;
+    font-size: 11px;
+    font-weight: 700;
+    margin: 2px 3px;
+  }
+  .node.router { background: #154360; }
+  .node.fw { background: #7b241c; }
+  .node.sw-l3 { background: #1a5c30; }
+  .node.sw-l2 { background: #5d6d7e; }
+  .node.srv { background: #4a235a; }
+  .node.pc { background: #784212; }
+  .node.isp { background: #1a1917; }
+  .topo-line {
+    color: var(--muted);
+    font-size: 18px;
+    line-height: 1;
+    padding: 0 4px;
+  }
+  .connector-row {
+    display: flex;
+    align-items: center;
+    padding-left: 96px;
+    margin: 0;
+    color: var(--muted);
+    font-size: 13px;
+  }
+
+  /* ── SUMMARY BAR ── */
+  .stat-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+    gap: 10px;
+    margin: 16px 0;
+  }
+  .stat-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 12px 14px;
+    text-align: center;
+  }
+  .stat-num {
+    font-family: var(--mono);
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--accent2);
+    line-height: 1;
+    margin-bottom: 4px;
+  }
+  .stat-lbl {
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--muted);
+  }
+
+  /* ── FOOTER ── */
+  footer {
+    margin: 40px 32px 0;
+    padding: 18px 0;
+    border-top: 1px solid var(--border);
+    font-size: 11px;
+    color: var(--muted);
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 8px;
+    font-family: var(--mono);
+  }
+
+  /* ── ANIMATIONS ── */
+  @keyframes fadeDown {
+    from { opacity: 0; transform: translateY(-10px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(12px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  hr.thin { border: none; border-top: 1px solid var(--border); margin: 18px 0; }
+
+  strong { font-weight: 700; }
+  em { font-style: italic; color: var(--muted); }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════ HEADER -->
+<header class="report-header">
+  <div class="header-badge">Network Analysis Report</div>
+  <h1>CMDT A5 — Enterprise Campus Network</h1>
+  <p class="subtitle">Cisco Packet Tracer topology · Full network documentation</p>
+  <div class="meta-row">
+    <div class="meta-item"><span class="meta-label">File</span><span class="meta-value">CMDT A5.pkt</span></div>
+    <div class="meta-item"><span class="meta-label">Date</span><span class="meta-value">June 2026</span></div>
+    <div class="meta-item"><span class="meta-label">Total Devices</span><span class="meta-value">79</span></div>
+    <div class="meta-item"><span class="meta-label">Routing Protocol</span><span class="meta-value">OSPF Area 0</span></div>
+    <div class="meta-item"><span class="meta-label">NAT Type</span><span class="meta-value">PAT (Overload)</span></div>
+    <div class="meta-item"><span class="meta-label">Topology</span><span class="meta-value">Dual-FW Hierarchical</span></div>
+  </div>
+</header>
+
+<!-- ═══════════════════════════════════════════ TOC -->
+<nav class="toc-bar">
+  <a class="toc-link" href="#s1">1. Overview</a>
+  <a class="toc-link" href="#s2">2. Logical Diagram</a>
+  <a class="toc-link" href="#s3">3. Subnets &amp; IP Plan</a>
+  <a class="toc-link" href="#s4">4. Routing</a>
+  <a class="toc-link" href="#s5">5. NAT / PAT</a>
+  <a class="toc-link" href="#s6">6. ACLs</a>
+  <a class="toc-link" href="#s7">7. Services</a>
+  <a class="toc-link" href="#s8">8. Security</a>
+</nav>
+
+<main>
+
+<!-- ═══════════════════════════════════════════ S1 OVERVIEW -->
+<section class="section" id="s1">
+  <div class="section-header">
+    <span class="section-num">01</span>
+    <h2 class="section-title">Network Overview</h2>
+  </div>
+
+  <p>This document describes the logical network architecture extracted from <strong>CMDT A5.pkt</strong>. The topology models a mid-to-large enterprise campus with a headquarters (HQ) site connected to a simulated Internet cloud via a serial WAN link, using a redundant dual-firewall perimeter design. The internal campus follows a classic three-tier hierarchical model (Core/Distribution/Access), with VLAN segmentation, HSRP-based gateway redundancy, and centralized DHCP/DNS services in a dedicated DMZ segment.</p>
+
+  <div class="stat-grid">
+    <div class="stat-card"><div class="stat-num">3</div><div class="stat-lbl">Firewalls (ASA)</div></div>
+    <div class="stat-card"><div class="stat-num">8</div><div class="stat-lbl">L3 Switches</div></div>
+    <div class="stat-card"><div class="stat-num">6</div><div class="stat-lbl">L2 Access Switches</div></div>
+    <div class="stat-card"><div class="stat-num">5</div><div class="stat-lbl">Routers</div></div>
+    <div class="stat-card"><div class="stat-num">7</div><div class="stat-lbl">VLANs (data+cam)</div></div>
+    <div class="stat-card"><div class="stat-num">9</div><div class="stat-lbl">DMZ Servers</div></div>
+    <div class="stat-card"><div class="stat-num">6</div><div class="stat-lbl">DHCP Pools</div></div>
+    <div class="stat-card"><div class="stat-num">1</div><div class="stat-lbl">OSPF Process</div></div>
+  </div>
+
+  <div class="subsection">
+    <div class="subsection-title">Architecture Summary</div>
+    <p>The HQ campus is built around a <strong>two-tier core</strong> implemented as two 3560-24PS multilayer switches (<em>HQ-MLSW1</em> and <em>HQ-MLSW2</em>) that form an EtherChannel trunk (Port-channel 1, Fa0/23–24) for redundancy. Each core switch uplinks to one of the two ASA 5506-X firewalls (<em>FW1</em> and <em>FW2</em>), which in turn connect to the <em>Gate-HQ</em> router (the WAN gateway). This creates an active-active dual-path perimeter.</p>
+    <p>Below the core layer, five pairs of 3560-24PS distribution switches (<em>DIS1–DIS5</em> / <em>DIS6</em> equivalent on the second stack) handle inter-VLAN routing with HSRP, each serving a floor or building segment. Access-layer 2960-24TT switches (<em>Sw1, Sw2, AC3, AC4, AC5</em> and the DMZ switch) provide port-level VLAN assignment and port-security.</p>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════ S2 LOGICAL DIAGRAM -->
+<section class="section" id="s2">
+  <div class="section-header">
+    <span class="section-num">02</span>
+    <h2 class="section-title">Logical Network Diagram (Text)</h2>
+  </div>
+
+  <div class="topo-diagram">
+
+    <div class="topo-tier">
+      <span class="topo-label">Internet / ISP</span>
+      <div class="topo-nodes">
+        <span class="node isp">ISP (Internet 2911)</span>
+        <span class="node pc">PC21(1) 8.8.8.9</span>
+        <span class="node srv">8.8.8.8 DNS</span>
+        &nbsp;└─ Switch12(1) [ISP LAN, 8.0.0.0/8]
+      </div>
+    </div>
+
+    <div class="connector-row">│ Serial 20.20.20.0/30 (DCE→Gate-HQ)</div>
+
+    <div class="topo-tier">
+      <span class="topo-label">WAN Gateway</span>
+      <div class="topo-nodes">
+        <span class="node router">Gate-HQ (2901→2911)</span>
+        &nbsp;· NAT PAT inside → Serial0/1/0 · OSPF 15 RID 7.1.7.1
+      </div>
+    </div>
+
+    <div class="connector-row">├── Gi0/0 10.1.250.0/30 ──→ FW1 OUTSIDE (10.1.250.2)</div>
+    <div class="connector-row">└── Gi0/1 10.1.251.0/30 ──→ FW2 OUTSIDE (10.1.251.2)</div>
+
+    <div class="topo-tier">
+      <span class="topo-label">Perimeter FW</span>
+      <div class="topo-nodes">
+        <span class="node fw">FW1 (HQ-FW1) ASA 5506-X</span>
+        &nbsp;↔ FW_LINK 10.1.255.20/30 ↔&nbsp;
+        <span class="node fw">FW2 (HQ-FW2) ASA 5506-X</span>
+      </div>
+    </div>
+
+    <div class="connector-row">FW1-INSIDE1 10.1.255.6 → HQ-MLSW1 Fa0/1 (10.1.255.5)</div>
+    <div class="connector-row">FW1-INSIDE2 10.1.255.10 → HQ-MLSW2 Fa0/1 (10.1.255.9)</div>
+    <div class="connector-row">FW2-INSIDE1 10.1.255.18 → HQ-MLSW2 Fa0/7 (10.1.255.17)</div>
+    <div class="connector-row">FW2-INSIDE2 10.1.255.14 → HQ-MLSW1 Fa0/7 (10.1.255.13)</div>
+
+    <div class="topo-tier">
+      <span class="topo-label">Core / Aggregation</span>
+      <div class="topo-nodes">
+        <span class="node sw-l3">HQ-MLSW1 (3560)</span>
+        &nbsp;⇌ EtherChannel Po1 ⇌&nbsp;
+        <span class="node sw-l3">HQ-MLSW2 (3560)</span>
+        &nbsp;· OSPF 15 · Routes to DMZ 10.200.200.0/27
+      </div>
+    </div>
+
+    <div class="connector-row">MLSW1: Fa0/2→DIS1, Fa0/3→DIS2, Fa0/4→DIS3, Fa0/5→DIS4, Fa0/6→DIS5, Fa0/9→DIS6</div>
+    <div class="connector-row">MLSW2: Fa0/2→DIS1, Fa0/3→DIS2, Fa0/4→DIS3, Fa0/5→DIS4, Fa0/6→DIS5, Fa0/8→DIS6</div>
+
+    <div class="topo-tier">
+      <span class="topo-label">Distribution (L3)</span>
+      <div class="topo-nodes">
+        <span class="node sw-l3">DIS1 VLAN10/70</span>
+        <span class="node sw-l3">DIS2 VLAN10/70</span>
+        <span class="node sw-l3">DIS3 VLAN20/80</span>
+        <span class="node sw-l3">DIS4 VLAN20/80</span>
+        <span class="node sw-l3">DIS5 VLAN30/90</span>
+        <span class="node sw-l3">DIS6 VLAN30/90</span>
+        &nbsp;· HSRP per VLAN · ip helper-address to DHCP-1/DHCP-2
+      </div>
+    </div>
+
+    <div class="connector-row">Trunk uplinks ↓ to access layer</div>
+
+    <div class="topo-tier">
+      <span class="topo-label">Access (L2)</span>
+      <div class="topo-nodes">
+        <span class="node sw-l2">Sw1 (101)</span>
+        <span class="node sw-l2">Sw2 (201)</span>
+        <span class="node sw-l2">AC3 (301)</span>
+        <span class="node sw-l2">AC4 (401)</span>
+        <span class="node sw-l2">AC5 (501)</span>
+        &nbsp;· Port-security · Portfast · BPDUguard · SSH-only VTY
+      </div>
+    </div>
+
+    <div class="connector-row">Access ports → PCs (DHCP), IP Cameras (VLAN 70/80/90)</div>
+
+    <div class="topo-tier">
+      <span class="topo-label">DMZ Segment</span>
+      <div class="topo-nodes">
+        <span class="node sw-l2">DMZ-SW (Switch1)</span>
+        &nbsp;→&nbsp;
+        <span class="node srv">DHCP-1 .5</span>
+        <span class="node srv">DHCP-2 .6</span>
+        <span class="node srv">DNS .7</span>
+        <span class="node srv">Server0–4 .8–.12</span>
+        &nbsp;[10.200.200.0/27, GW .1 via MLSW1 Fa0/8]
+      </div>
+    </div>
+
+    <div class="topo-tier">
+      <span class="topo-label">Wireless / IoT</span>
+      <div class="topo-nodes">
+        <span class="node sw-l2">Switch0</span>
+        &nbsp;→ Router4 (WLC gateway) → WLC0 → LAP0 · PC20–PC23
+      </div>
+    </div>
+
+  </div>
+
+  <div class="callout info">
+    <div class="callout-label">Note on Unsupported Devices</div>
+    The original file uses Cisco 2901/1941 router models (Gate-HQ, Router0–4). These are functionally identical to the 2911 in PT configuration terms. IP cameras (CAM-02 series) are MCUComponent IoT devices. The WLC-PT + LAP-PT pair handles wireless. All configs were captured fully.
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════ S3 SUBNETS -->
+<section class="section" id="s3">
+  <div class="section-header">
+    <span class="section-num">03</span>
+    <h2 class="section-title">Subnets, Network Addresses &amp; IP Ranges</h2>
+  </div>
+
+  <div class="subsection">
+    <div class="subsection-title">User &amp; Camera VLANs — 10.1.x.0/24</div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>VLAN</th><th>Name/Role</th><th>Subnet</th><th>Gateway (HSRP VIP)</th><th>DIS Pair</th><th>DHCP Server</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td><span class="tag tag-blue">10</span></td><td>Staff / User-A</td><td class="mono">10.1.10.0/24</td><td class="mono">10.1.10.1</td><td>DIS1 (.2) / DIS2 (.3)</td><td class="mono">10.200.200.5 &amp; .6</td></tr>
+          <tr><td><span class="tag tag-blue">20</span></td><td>Staff / User-B</td><td class="mono">10.1.20.0/24</td><td class="mono">10.1.20.1</td><td>DIS3 (.2) / DIS4 (.3)</td><td class="mono">10.200.200.5 &amp; .6</td></tr>
+          <tr><td><span class="tag tag-blue">30</span></td><td>Staff / User-C</td><td class="mono">10.1.30.0/24</td><td class="mono">10.1.30.1</td><td>DIS5 (.2) / DIS6 (.3)</td><td class="mono">10.200.200.5 &amp; .6</td></tr>
+          <tr><td><span class="tag tag-orange">70</span></td><td>IP Cameras-A</td><td class="mono">10.1.70.0/24</td><td class="mono">10.1.70.1</td><td>DIS1 (.2) / DIS2 (.3)</td><td class="mono">10.200.200.5 &amp; .6</td></tr>
+          <tr><td><span class="tag tag-orange">80</span></td><td>IP Cameras-B</td><td class="mono">10.1.80.0/24</td><td class="mono">10.1.80.1</td><td>DIS3 (.2) / DIS4 (.3)</td><td class="mono">10.200.200.5 &amp; .6</td></tr>
+          <tr><td><span class="tag tag-orange">90</span></td><td>IP Cameras-C</td><td class="mono">10.1.90.0/24</td><td class="mono">10.1.90.1</td><td>DIS5 (.2) / DIS6 (.3)</td><td class="mono">10.200.200.5 &amp; .6</td></tr>
+          <tr><td><span class="tag tag-grey">50</span></td><td>Reserved/Unused</td><td class="mono">—</td><td class="mono">—</td><td>Access ports only</td><td>—</td></tr>
+          <tr><td><span class="tag tag-red">199</span></td><td>GigE shutdown ports</td><td class="mono">—</td><td class="mono">—</td><td>Access sw GE0/1, GE0/2</td><td>—</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="subsection">
+    <div class="subsection-title">DMZ / Server Farm — 10.200.200.0/27</div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Device</th><th>IP Address</th><th>Role</th></tr></thead>
+        <tbody>
+          <tr><td>MLSW1 Fa0/8 (gateway)</td><td class="mono">10.200.200.1 /27</td><td>Default GW for all DMZ servers</td></tr>
+          <tr><td>DHCP-1</td><td class="mono">10.200.200.5 /27</td><td>Primary DHCP (VLAN 10/20/30/70/80/90)</td></tr>
+          <tr><td>DHCP-2</td><td class="mono">10.200.200.6 /27</td><td>Secondary DHCP (identical pools)</td></tr>
+          <tr><td>DNS</td><td class="mono">10.200.200.7 /27</td><td>Internal DNS server</td></tr>
+          <tr><td>Server0</td><td class="mono">10.200.200.8 /27</td><td>Application server (ip helper target)</td></tr>
+          <tr><td>Server1</td><td class="mono">10.200.200.9 /27</td><td>Application server</td></tr>
+          <tr><td>Server2</td><td class="mono">10.200.200.10 /27</td><td>Application server</td></tr>
+          <tr><td>Server3</td><td class="mono">10.200.200.11 /27</td><td>Application server</td></tr>
+          <tr><td>Server4</td><td class="mono">10.200.200.12 /27</td><td>Application server</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>Usable host range: <code>10.200.200.1 – 10.200.200.30</code> (30 hosts). Broadcast: <code>10.200.200.31</code>.</p>
+  </div>
+
+  <div class="subsection">
+    <div class="subsection-title">Core &amp; Inter-device Point-to-Point Links — 10.1.255.x/30 &amp; 10.1.240.x/30</div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Subnet</th><th>Side A</th><th>IP A</th><th>Side B</th><th>IP B</th><th>Purpose</th></tr></thead>
+        <tbody>
+          <tr><td class="mono">10.1.250.0/30</td><td>Gate-HQ Gi0/0</td><td class="mono">10.1.250.1</td><td>FW1 OUTSIDE</td><td class="mono">10.1.250.2</td><td>WAN→FW1</td></tr>
+          <tr><td class="mono">10.1.251.0/30</td><td>Gate-HQ Gi0/1</td><td class="mono">10.1.251.1</td><td>FW2 OUTSIDE</td><td class="mono">10.1.251.2</td><td>WAN→FW2</td></tr>
+          <tr><td class="mono">10.1.255.4/30</td><td>FW1 INSIDE1</td><td class="mono">10.1.255.6</td><td>MLSW1 Fa0/1</td><td class="mono">10.1.255.5</td><td>FW1→Core1</td></tr>
+          <tr><td class="mono">10.1.255.8/30</td><td>FW1 INSIDE2</td><td class="mono">10.1.255.10</td><td>MLSW2 Fa0/1</td><td class="mono">10.1.255.9</td><td>FW1→Core2</td></tr>
+          <tr><td class="mono">10.1.255.12/30</td><td>FW2 INSIDE2</td><td class="mono">10.1.255.14</td><td>MLSW1 Fa0/7</td><td class="mono">10.1.255.13</td><td>FW2→Core1</td></tr>
+          <tr><td class="mono">10.1.255.16/30</td><td>FW2 INSIDE1</td><td class="mono">10.1.255.18</td><td>MLSW2 Fa0/7</td><td class="mono">10.1.255.17</td><td>FW2→Core2</td></tr>
+          <tr><td class="mono">10.1.255.20/30</td><td>FW1 FW_LINK</td><td class="mono">10.1.255.21</td><td>FW2 FW_LINK</td><td class="mono">10.1.255.22</td><td>FW↔FW HA link</td></tr>
+          <tr><td class="mono">10.1.255.104/30</td><td>Router3 Gi0/0</td><td class="mono">10.1.255.105</td><td>MLSW1 GE0/1</td><td class="mono">—</td><td>VLAN80 sub-router</td></tr>
+          <tr><td class="mono">10.1.240.8/30</td><td>MLSW1 Fa0/2</td><td class="mono">10.1.240.10</td><td>DIS1 Fa0/1</td><td class="mono">10.1.240.9</td><td>Core1→DIS1</td></tr>
+          <tr><td class="mono">10.1.240.12/30</td><td>MLSW1 Fa0/3</td><td class="mono">10.1.240.14</td><td>DIS2 Fa0/1</td><td class="mono">10.1.240.13</td><td>Core1→DIS2</td></tr>
+          <tr><td class="mono">10.1.240.16/30</td><td>MLSW1 Fa0/4</td><td class="mono">10.1.240.18</td><td>DIS3 Fa0/1</td><td class="mono">10.1.240.17</td><td>Core1→DIS3</td></tr>
+          <tr><td class="mono">10.1.240.20/30</td><td>MLSW1 Fa0/5</td><td class="mono">10.1.240.22</td><td>DIS4 Fa0/1</td><td class="mono">10.1.240.21</td><td>Core1→DIS4</td></tr>
+          <tr><td class="mono">10.1.240.24/30</td><td>MLSW1 Fa0/6</td><td class="mono">10.1.240.26</td><td>DIS5 Fa0/1</td><td class="mono">10.1.240.25</td><td>Core1→DIS5</td></tr>
+          <tr><td class="mono">10.1.240.28/30</td><td>MLSW1 Fa0/9</td><td class="mono">10.1.240.30</td><td>DIS6 Fa0/1</td><td class="mono">10.1.240.29</td><td>Core1→DIS6</td></tr>
+          <tr><td class="mono">10.1.240.32/30</td><td>MLSW2 Fa0/2</td><td class="mono">10.1.240.34</td><td>DIS1 Fa0/2</td><td class="mono">10.1.240.33</td><td>Core2→DIS1</td></tr>
+          <tr><td class="mono">10.1.240.36/30</td><td>MLSW2 Fa0/3</td><td class="mono">10.1.240.38</td><td>DIS2 Fa0/2</td><td class="mono">10.1.240.37</td><td>Core2→DIS2</td></tr>
+          <tr><td class="mono">10.1.240.40/30</td><td>MLSW2 Fa0/4</td><td class="mono">10.1.240.42</td><td>DIS3 Fa0/2</td><td class="mono">10.1.240.41</td><td>Core2→DIS3</td></tr>
+          <tr><td class="mono">10.1.240.44/30</td><td>MLSW2 Fa0/5</td><td class="mono">10.1.240.46</td><td>DIS4 Fa0/2</td><td class="mono">10.1.240.45</td><td>Core2→DIS4</td></tr>
+          <tr><td class="mono">10.1.240.48/30</td><td>MLSW2 Fa0/6</td><td class="mono">10.1.240.50</td><td>DIS5 Fa0/2</td><td class="mono">10.1.240.49</td><td>Core2→DIS5</td></tr>
+          <tr><td class="mono">10.1.240.52/30</td><td>MLSW2 Fa0/9</td><td class="mono">10.1.240.54</td><td>DIS6 Fa0/2</td><td class="mono">10.1.240.53</td><td>Core2→DIS6</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="subsection">
+    <div class="subsection-title">WAN &amp; Internet Segments</div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Subnet</th><th>Side A</th><th>IP A</th><th>Side B</th><th>IP B</th></tr></thead>
+        <tbody>
+          <tr><td class="mono">20.20.20.0/30</td><td>ISP Serial0/0/0</td><td class="mono">20.20.20.2</td><td>Gate-HQ Serial0/1/0</td><td class="mono">20.20.20.1</td></tr>
+          <tr><td class="mono">8.0.0.0/8</td><td>ISP Gi0/2</td><td class="mono">8.8.8.1</td><td>Server 8.8.8.8, PC 8.8.8.9</td><td class="mono">8.8.8.8 / .9</td></tr>
+          <tr><td class="mono">10.0.10.0/30</td><td>Gate-HQ Serial0/0/0</td><td class="mono">10.0.10.1</td><td>(IPSec peer link)</td><td class="mono">—</td></tr>
+          <tr><td class="mono">10.0.20.0/30</td><td>Gate-HQ Serial0/0/1</td><td class="mono">10.0.20.1</td><td>(secondary serial)</td><td class="mono">—</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════ S4 ROUTING -->
+<section class="section" id="s4">
+  <div class="section-header">
+    <span class="section-num">04</span>
+    <h2 class="section-title">Routing Protocols &amp; Static Routes</h2>
+  </div>
+
+  <div class="callout info">
+    <div class="callout-label">Protocol Summary</div>
+    <strong>Single routing protocol: OSPFv2, Process 15, Area 0 (backbone only).</strong> No RIP or EIGRP is configured. Static default routes are used at the WAN edge and core layer for Internet-bound traffic. HSRP provides first-hop redundancy at the distribution layer — it is not a routing protocol but works in conjunction with OSPF.
+  </div>
+
+  <div class="subsection">
+    <div class="subsection-title">OSPF Process 15 — Participating Devices</div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Device</th><th>Hostname</th><th>Router-ID</th><th>Networks Advertised (wildcard)</th></tr></thead>
+        <tbody>
+          <tr>
+            <td>Gate-HQ</td><td>Gate-HQ</td><td class="mono">7.1.7.1</td>
+            <td class="mono">10.200.200.0/0.0.0.31 · 10.1.250.0/0.0.0.3 · 10.1.251.0/0.0.0.3<br><em>+ default-information originate</em></td>
+          </tr>
+          <tr>
+            <td>HQ-MLSW1</td><td>HQ-MLSW1</td><td class="mono">2.1.2.1</td>
+            <td class="mono">10.1.255.4/0.0.0.3 · 10.1.255.12/0.0.0.3 · 10.200.200.0/0.0.0.31<br>10.1.240.8–28 (all /30 p2p to distribution)</td>
+          </tr>
+          <tr>
+            <td>HQ-MLSW2</td><td>HQ-MLSW2</td><td class="mono">3.1.3.1</td>
+            <td class="mono">10.1.255.16/0.0.0.3 · 10.1.255.8/0.0.0.3<br>10.1.240.32–52 (all /30 p2p to distribution)</td>
+          </tr>
+          <tr>
+            <td>FW1</td><td>FW1</td><td class="mono">3.2.4.1</td>
+            <td class="mono">10.1.255.4/255.255.255.252 · 10.1.255.8/255.255.255.252<br>10.1.255.20/255.255.255.252 · 10.1.250.0/255.255.255.252</td>
+          </tr>
+          <tr>
+            <td>FW2</td><td>FW2</td><td class="mono">3.2.5.1</td>
+            <td class="mono">10.1.255.16/255.255.255.252 · 10.1.255.12/255.255.255.252<br>10.1.255.20/255.255.255.252 · 10.1.251.0/255.255.255.252</td>
+          </tr>
+          <tr>
+            <td>DIS1 (Multilayer Switch0)</td><td>DIS1</td><td><em>auto</em></td>
+            <td class="mono">10.1.240.8/0.0.0.3 · 10.1.240.32/0.0.0.3 · 10.1.10.0/0.0.0.255 · 10.1.70.0/0.0.0.255</td>
+          </tr>
+          <tr>
+            <td>DIS2 (Multilayer Switch1)</td><td>DIS2</td><td><em>auto</em></td>
+            <td class="mono">10.1.240.12/0.0.0.3 · 10.1.240.36/0.0.0.3 · 10.1.10.0/0.0.0.255 · 10.1.70.0/0.0.0.255</td>
+          </tr>
+          <tr>
+            <td>DIS3 (Multilayer Switch2)</td><td>DIS3</td><td><em>auto</em></td>
+            <td class="mono">10.1.240.16/0.0.0.3 · 10.1.240.40/0.0.0.3 · 10.1.20.0/0.0.0.255 · 10.1.80.0/0.0.0.255</td>
+          </tr>
+          <tr>
+            <td>DIS4 (Multilayer Switch3)</td><td>DIS4</td><td><em>auto</em></td>
+            <td class="mono">10.1.240.44/0.0.0.3 · 10.1.240.20/0.0.0.3 · 10.1.20.0/0.0.0.255 · 10.1.80.0/0.0.0.255</td>
+          </tr>
+          <tr>
+            <td>DIS5 (Multilayer Switch4)</td><td>DIS5</td><td><em>auto</em></td>
+            <td class="mono">10.1.240.48/0.0.0.3 · 10.1.240.24/0.0.0.3 · 10.1.90.0/0.0.0.255 · 10.1.30.0/0.0.0.255</td>
+          </tr>
+          <tr>
+            <td>DIS6 (Multilayer Switch5)</td><td>Switch</td><td><em>auto</em></td>
+            <td class="mono">10.1.240.52/0.0.0.3 · 10.1.240.28/0.0.0.3 · 10.1.230.0/0.0.0.255 · 10.1.90.0/0.0.0.255</td>
+          </tr>
+          <tr>
+            <td>Router3</td><td>Router</td><td><em>auto</em></td>
+            <td class="mono">10.1.20.0/0.0.0.255 · 10.1.80.0/0.0.0.255 · 10.1.255.104/0.0.0.3</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="subsection">
+    <div class="subsection-title">Static Routes</div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Device</th><th>Destination</th><th>Next-Hop / Exit Interface</th><th>AD</th><th>Purpose</th></tr></thead>
+        <tbody>
+          <tr><td>Gate-HQ</td><td class="mono">0.0.0.0/0</td><td class="mono">Serial0/1/0</td><td>1</td><td>Default route to ISP</td></tr>
+          <tr><td>HQ-MLSW1</td><td class="mono">0.0.0.0/0</td><td class="mono">10.1.255.14</td><td>10</td><td>Primary default → FW2 (backup)</td></tr>
+          <tr><td>HQ-MLSW1</td><td class="mono">0.0.0.0/0</td><td class="mono">10.20.20.6</td><td>1</td><td>Secondary default (lower AD, primary)</td></tr>
+          <tr><td>HQ-MLSW2</td><td class="mono">0.0.0.0/0</td><td class="mono">10.1.255.10</td><td>1</td><td>Primary default → FW1</td></tr>
+          <tr><td>HQ-MLSW2</td><td class="mono">0.0.0.0/0</td><td class="mono">10.1.255.18</td><td>10</td><td>Backup default → FW2</td></tr>
+          <tr><td>FW1</td><td class="mono">0.0.0.0/0</td><td class="mono">10.1.250.1 (OUTSIDE)</td><td>1</td><td>Default route to Gate-HQ</td></tr>
+          <tr><td>FW2</td><td class="mono">0.0.0.0/0</td><td class="mono">10.1.251.1 (OUTSIDE)</td><td>1</td><td>Default route to Gate-HQ</td></tr>
+          <tr><td>Gate-HQ</td><td><em>redistributed static</em></td><td>—</td><td>—</td><td>OSPF redistributes static → default-info originate</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="subsection">
+    <div class="subsection-title">OSPF — Key Design Notes</div>
+    <ul>
+      <li><strong>Single Area 0:</strong> All OSPF participants are in the backbone area. No inter-area or external LSAs except the default route originated by Gate-HQ.</li>
+      <li><strong>Redistribute static:</strong> Gate-HQ redistributes its static routes into OSPF (process 15) with <code>redistribute static subnets</code>, ensuring internal routers learn the default route via Type-5 LSA.</li>
+      <li><strong>Default-information originate:</strong> Gate-HQ also uses <code>default-information originate</code> — this pushes a Type-5 default LSA into OSPF so all internal devices can reach the Internet.</li>
+      <li><strong>OSPF on ASA firewalls:</strong> Both FW1 and FW2 run OSPFv2 process 15, advertising their internal and external /30 links. This is notable — the ASAs participate in the routing domain, not just as policy enforcement points.</li>
+      <li><strong>Dual-path to Internet:</strong> Two paths exist from the campus to the Internet: Core1→FW1→Gate-HQ and Core2→FW2→Gate-HQ. OSPF equal-cost multipathing applies for traffic with identical metrics.</li>
+      <li><strong>Router3 anomaly:</strong> Router3 advertises <code>10.1.20.0/24</code> and <code>10.1.80.0/24</code> — the same subnets as DIS3/DIS4. This appears to be a routing inconsistency in the original file (sub-interface for VLAN80 on Gi0/1.80).</li>
+    </ul>
+  </div>
+
+  <div class="subsection">
+    <div class="subsection-title">HSRP — First-Hop Redundancy at Distribution</div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>VLAN</th><th>HSRP Group</th><th>Virtual IP (Gateway)</th><th>Active (higher prio)</th><th>Standby</th></tr></thead>
+        <tbody>
+          <tr><td>10</td><td>10</td><td class="mono">10.1.10.1</td><td>DIS1 (.2)</td><td>DIS2 (.3)</td></tr>
+          <tr><td>20</td><td>20</td><td class="mono">10.1.20.1</td><td>DIS3 (.2)</td><td>DIS4 (.3)</td></tr>
+          <tr><td>30</td><td>30</td><td class="mono">10.1.30.1</td><td>DIS5 (.2)</td><td>DIS6 (.3)</td></tr>
+          <tr><td>70</td><td>70</td><td class="mono">10.1.70.1</td><td>DIS1 (.2)</td><td>DIS2 (.3)</td></tr>
+          <tr><td>80</td><td>80</td><td class="mono">10.1.80.1</td><td>DIS3 (.2)</td><td>DIS4 (.3)</td></tr>
+          <tr><td>90</td><td>90</td><td class="mono">10.1.90.1</td><td>DIS5 (.2)</td><td>DIS6 (.3)</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p><em>No explicit priority or preempt statements found — default priority 100 applies to both peers in each group.</em></p>
+  </div>
+
+  <div class="subsection">
+    <div class="subsection-title">IPSec VPN Configuration (Gate-HQ)</div>
+    <div class="callout warn">
+      <div class="callout-label">Incomplete VPN</div>
+      An IPSec VPN is partially configured on Gate-HQ but is marked <code>! Incomplete</code> in the crypto map. The peer address is <code>30.30.30.1</code> (not reachable in this topology). The configuration is present but non-functional in the simulated environment.
+    </div>
+    <pre><span class="hl-k">crypto isakmp policy</span> <span class="hl-v">10</span>
+  <span class="hl-k">encr</span> aes
+  <span class="hl-k">authentication</span> pre-share
+  <span class="hl-k">group</span> 5
+<span class="hl-k">crypto isakmp key</span> <span class="hl-s">HuongGiang</span> <span class="hl-k">address</span> <span class="hl-v">30.30.30.1</span>
+
+<span class="hl-k">crypto ipsec transform-set</span> GRE-SET esp-3des esp-sha-hmac
+
+<span class="hl-k">crypto map</span> GRE-MAP <span class="hl-v">10</span> ipsec-isakmp
+  <span class="hl-c">! Incomplete</span>
+  <span class="hl-k">set peer</span> <span class="hl-v">30.30.30.1</span>
+  <span class="hl-k">set transform-set</span> GRE-SET
+  <span class="hl-k">match address</span> <span class="hl-v">150</span></pre>
+    <p>ACL 150 (referenced by the crypto map) is not defined in the captured config — this VPN is non-operational.</p>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════ S5 NAT/PAT -->
+<section class="section" id="s5">
+  <div class="section-header">
+    <span class="section-num">05</span>
+    <h2 class="section-title">NAT / PAT</h2>
+  </div>
+
+  <div class="callout success">
+    <div class="callout-label">NAT Type</div>
+    <strong>PAT (Port Address Translation / NAT Overload)</strong> — configured on Gate-HQ only. A single public IP (the Serial0/1/0 interface address, <code>20.20.20.1</code>) is used for all outbound translations. No static NAT or dynamic NAT pools are present.
+  </div>
+
+  <div class="subsection">
+    <div class="subsection-title">NAT Configuration — Gate-HQ</div>
+    <pre><span class="hl-c">! Interfaces</span>
+<span class="hl-i">interface GigabitEthernet0/0</span>
+ <span class="hl-k">ip nat inside</span>        <span class="hl-c">! → HQ-FW1 (10.1.250.x)</span>
+<span class="hl-i">interface GigabitEthernet0/1</span>
+ <span class="hl-k">ip nat inside</span>        <span class="hl-c">! → HQ-FW2 (10.1.251.x)</span>
+<span class="hl-i">interface Serial0/1/0</span>
+ <span class="hl-k">ip nat outside</span>       <span class="hl-c">! → ISP (20.20.20.2), public IP = 20.20.20.1</span>
+
+<span class="hl-c">! NAT rule</span>
+<span class="hl-k">ip nat inside source list</span> NAT_HQ <span class="hl-k">interface</span> <span class="hl-i">Serial0/1/0</span> overload
+
+<span class="hl-c">! ACL that defines 'inside' traffic</span>
+<span class="hl-k">ip access-list extended</span> NAT_HQ
+ <span class="hl-k">permit ip</span> <span class="hl-v">10.1.0.0 0.0.255.255</span> any    <span class="hl-c">! All 10.1.x.x subnets</span>
+ <span class="hl-k">permit ip</span> <span class="hl-v">10.200.200.0 0.0.0.31</span> any  <span class="hl-c">! DMZ server farm</span></pre>
+  </div>
+
+  <div class="subsection">
+    <div class="subsection-title">NAT Summary Table</div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Parameter</th><th>Value</th></tr></thead>
+        <tbody>
+          <tr><td>NAT Type</td><td><span class="tag tag-red">PAT / Overload</span></td></tr>
+          <tr><td>Inside interfaces</td><td class="mono">GigabitEthernet0/0 (→ FW1 side) &amp; GigabitEthernet0/1 (→ FW2 side)</td></tr>
+          <tr><td>Outside interface</td><td class="mono">Serial0/1/0 (IP: 20.20.20.1)</td></tr>
+          <tr><td>Public IP pool</td><td class="mono">20.20.20.1 only (interface overload)</td></tr>
+          <tr><td>Inside source ACL</td><td class="mono">NAT_HQ (extended named ACL)</td></tr>
+          <tr><td>Inside address range 1</td><td class="mono">10.1.0.0 / 0.0.255.255 (entire 10.1.x.x space)</td></tr>
+          <tr><td>Inside address range 2</td><td class="mono">10.200.200.0 / 0.0.0.31 (DMZ /27)</td></tr>
+          <tr><td>Static NAT entries</td><td>None</td></tr>
+          <tr><td>NAT pool</td><td>None (interface-based overload only)</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>All campus traffic (VLANs 10, 20, 30, 70, 80, 90 and the DMZ) is NATed to a single public IP when exiting to the Internet via the serial link.</p>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════ S6 ACLs -->
+<section class="section" id="s6">
+  <div class="section-header">
+    <span class="section-num">06</span>
+    <h2 class="section-title">Access Control Lists (ACLs)</h2>
+  </div>
+
+  <div class="subsection">
+    <div class="subsection-title">ACL 2 — VTY Management Restriction (All Switches)</div>
+    <p>Applied inbound on <strong>VTY lines 0–15</strong> of all managed switches (HQ-MLSW1, HQ-MLSW2, Sw1, Sw2, AC3, AC4, AC5, DMZ-SW). Restricts SSH/Telnet management access to one source subnet only.</p>
+    <pre><span class="hl-k">access-list</span> <span class="hl-v">2</span> <span class="hl-k">permit</span> <span class="hl-v">192.168.10.0 0.0.0.255</span>
+<span class="hl-k">access-list</span> <span class="hl-v">2</span> <span class="hl-k">deny any</span>
+
+<span class="hl-c">! Applied on:</span>
+<span class="hl-k">line vty 0 4</span>
+ <span class="hl-k">access-class</span> <span class="hl-v">2</span> in
+ <span class="hl-k">transport input ssh</span>
+<span class="hl-k">line vty 5 15</span>
+ <span class="hl-k">access-class</span> <span class="hl-v">2</span> in
+ <span class="hl-k">transport input ssh</span></pre>
+    <div class="callout warn">
+      <div class="callout-label">Security Observation</div>
+      ACL 2 permits management only from <code>192.168.10.0/24</code>. However, this subnet does not appear anywhere in the network's IP plan — it is not a configured VLAN or interface in the topology. This means <strong>VTY access is effectively blocked from all current hosts</strong>, which may be intentional (out-of-band management network) or a misconfiguration.
+    </div>
+  </div>
+
+  <div class="subsection">
+    <div class="subsection-title">RES-ACCESS — Firewall Inbound ACL (FW1 &amp; FW2 OUTSIDE Interface)</div>
+    <p>Applied as <code>access-group RES-ACCESS in interface OUTSIDE</code> on both ASA firewalls. Controls what traffic from the Internet (or WAN) is permitted to enter the campus.</p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>#</th><th>Action</th><th>Protocol</th><th>Source</th><th>Destination</th><th>Port / Service</th><th>Purpose</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td><span class="tag tag-green">PERMIT</span></td><td>ICMP</td><td>any</td><td>any</td><td>any</td><td>Allow ping (testing)</td></tr>
+          <tr><td>2</td><td><span class="tag tag-green">PERMIT</span></td><td>UDP</td><td>any</td><td>any</td><td>67 (bootps)</td><td>DHCP server</td></tr>
+          <tr><td>3</td><td><span class="tag tag-green">PERMIT</span></td><td>UDP</td><td>any</td><td>any</td><td>68 (bootpc)</td><td>DHCP client</td></tr>
+          <tr><td>4</td><td><span class="tag tag-green">PERMIT</span></td><td>UDP</td><td>any</td><td>any</td><td>53 (domain)</td><td>DNS (UDP)</td></tr>
+          <tr><td>5</td><td><span class="tag tag-green">PERMIT</span></td><td>TCP</td><td>any</td><td>any</td><td>53 (domain)</td><td>DNS (TCP)</td></tr>
+          <tr><td>6</td><td><span class="tag tag-green">PERMIT</span></td><td>TCP</td><td>any</td><td>any</td><td>80 (www)</td><td>HTTP</td></tr>
+          <tr><td>7</td><td><span class="tag tag-green">PERMIT</span></td><td>TCP</td><td>any</td><td>any</td><td>25 (smtp)</td><td>SMTP email</td></tr>
+          <tr><td>8</td><td><span class="tag tag-green">PERMIT</span></td><td>TCP</td><td>any</td><td>any</td><td>20</td><td>FTP data</td></tr>
+          <tr><td>9</td><td><span class="tag tag-green">PERMIT</span></td><td>TCP</td><td>any</td><td>any</td><td>21 (ftp)</td><td>FTP control</td></tr>
+          <tr><td>10</td><td><span class="tag tag-green">PERMIT</span></td><td>UDP</td><td>any</td><td>any</td><td>5246</td><td>CAPWAP control (WLC)</td></tr>
+          <tr><td>11</td><td><span class="tag tag-green">PERMIT</span></td><td>UDP</td><td>any</td><td>any</td><td>5247</td><td>CAPWAP data (WLC)</td></tr>
+          <tr><td>12</td><td><span class="tag tag-green">PERMIT</span></td><td>UDP</td><td>any</td><td>any</td><td>12222</td><td>LWAPP control (legacy)</td></tr>
+          <tr><td>13</td><td><span class="tag tag-green">PERMIT</span></td><td>UDP</td><td>any</td><td>any</td><td>12223</td><td>LWAPP data (legacy)</td></tr>
+          <tr><td><em>implicit</em></td><td><span class="tag tag-red">DENY</span></td><td>any</td><td>any</td><td>any</td><td>any</td><td>ASA implicit deny all</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>FW1 and FW2 carry identical ACL rule sets. The ACL is <strong>source-any / destination-any</strong> for all permitted services — no destination filtering is enforced at the firewall rule level. Traffic filtering beyond this relies on the ASA's stateful inspection engine (global policy / MPF).</p>
+    <div class="callout">
+      <div class="callout-label">Security Note</div>
+      Permitting <strong>ICMP any any</strong> and all CAPWAP/LWAPP ports from any source on the OUTSIDE interface is a broad policy. In a production environment, CAPWAP ports should be restricted to known WLC peer addresses and ICMP should be limited to echo/echo-reply types only.
+    </div>
+  </div>
+
+  <div class="subsection">
+    <div class="subsection-title">NAT ACL — Named Extended ACL "NAT_HQ" (Gate-HQ)</div>
+    <p>Defines the inside address space eligible for PAT translation. Documented in Section 5 above.</p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Rule</th><th>Action</th><th>Protocol</th><th>Source</th><th>Destination</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td><span class="tag tag-green">PERMIT</span></td><td>IP</td><td class="mono">10.1.0.0 /16</td><td>any</td></tr>
+          <tr><td>2</td><td><span class="tag tag-green">PERMIT</span></td><td>IP</td><td class="mono">10.200.200.0 /27</td><td>any</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="subsection">
+    <div class="subsection-title">Port Security — Access Switch Ports (Sw1 / 101)</div>
+    <p>Port-security is configured on Fa0/3 through Fa0/8 of switch Sw1 (hostname: <em>Sw1</em>). Configuration pattern per port:</p>
+    <pre><span class="hl-i">interface FastEthernet0/3</span>
+ <span class="hl-k">switchport port-security</span>
+ <span class="hl-k">switchport port-security maximum</span> <span class="hl-v">2</span>
+ <span class="hl-k">switchport port-security mac-address sticky</span>
+ <span class="hl-k">switchport port-security violation restrict</span>
+ <span class="hl-k">switchport port-security mac-address sticky</span> <span class="hl-v">0060.2FC8.5D47</span>
+ <span class="hl-k">spanning-tree portfast</span>
+ <span class="hl-k">spanning-tree bpduguard enable</span></pre>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Parameter</th><th>Value</th></tr></thead>
+        <tbody>
+          <tr><td>Max MAC addresses</td><td class="mono">2 per port</td></tr>
+          <tr><td>MAC learning</td><td>Sticky (dynamically learned, saved to running config)</td></tr>
+          <tr><td>Violation action</td><td><span class="tag tag-orange">Restrict</span> — drops frames, increments counter, does NOT shut down port</td></tr>
+          <tr><td>Portfast</td><td>Enabled (immediate forwarding, bypass STP listening/learning)</td></tr>
+          <tr><td>BPDUguard</td><td>Enabled (shuts port if BPDU received — prevents rogue switch)</td></tr>
+          <tr><td>Applied ports</td><td>Fa0/3–Fa0/8 on Sw1; consistent on Sw2, AC3, AC4, AC5 (without sticky on some)</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════ S7 SERVICES -->
+<section class="section" id="s7">
+  <div class="section-header">
+    <span class="section-num">07</span>
+    <h2 class="section-title">Network Services</h2>
+  </div>
+
+  <div class="subsection">
+    <div class="subsection-title">DHCP — Dual Server Configuration</div>
+    <p>Two redundant DHCP servers (DHCP-1 at <code>10.200.200.5</code> and DHCP-2 at <code>10.200.200.6</code>) serve identical pool configurations. Distribution switches relay DHCP requests via <code>ip helper-address</code> to both servers simultaneously.</p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Pool Name</th><th>Network</th><th>Subnet Mask</th><th>Default Gateway</th><th>Start IP</th><th>Max Leases</th><th>DNS</th></tr></thead>
+        <tbody>
+          <tr><td>VLAN10</td><td class="mono">10.1.10.0</td><td class="mono">255.255.255.0</td><td class="mono">10.1.10.1</td><td class="mono">10.1.10.4</td><td>200</td><td class="mono">10.200.200.7</td></tr>
+          <tr><td>VLAN20</td><td class="mono">10.1.20.0</td><td class="mono">255.255.255.0</td><td class="mono">10.1.20.1</td><td class="mono">10.1.20.4</td><td>200</td><td class="mono">10.200.200.7</td></tr>
+          <tr><td>VLAN30</td><td class="mono">10.1.30.0</td><td class="mono">255.255.255.0</td><td class="mono">10.1.30.1</td><td class="mono">10.1.30.4</td><td>200</td><td class="mono">10.200.200.7</td></tr>
+          <tr><td>VLAN70</td><td class="mono">10.1.70.0</td><td class="mono">255.255.255.0</td><td class="mono">10.1.70.1</td><td class="mono">10.1.70.4</td><td>200</td><td class="mono">10.200.200.7</td></tr>
+          <tr><td>VLAN80</td><td class="mono">10.1.80.0</td><td class="mono">255.255.255.0</td><td class="mono">10.1.80.1</td><td class="mono">10.1.80.4</td><td>200</td><td class="mono">10.200.200.7</td></tr>
+          <tr><td>VLAN90</td><td class="mono">10.1.90.0</td><td class="mono">255.255.255.0</td><td class="mono">10.1.90.1</td><td class="mono">10.1.90.4</td><td>200</td><td class="mono">10.200.200.7</td></tr>
+          <tr><td>serverPool</td><td class="mono">10.200.200.0</td><td class="mono">255.255.255.224</td><td class="mono">0.0.0.0</td><td class="mono">10.200.200.0</td><td>0 (disabled)</td><td>—</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>DHCP relay (ip helper-address) is configured on all distribution switch SVIs pointing to both <code>10.200.200.5</code> and <code>10.200.200.6</code>. Server0 (<code>10.200.200.8</code>) is also listed as a helper target on Router3's sub-interface, suggesting it may serve a secondary relay or application role.</p>
+  </div>
+
+  <div class="subsection">
+    <div class="subsection-title">DNS</div>
+    <p>Internal DNS server: <code>10.200.200.7</code> (device: <em>DNS</em>). All DHCP pools push this address as the DNS server. The simulated Internet also has an 8.8.8.8 server at that address on the ISP segment.</p>
+  </div>
+
+  <div class="subsection">
+    <div class="subsection-title">ASA Firewall Inspection Policy (Global, Both FW1 &amp; FW2)</div>
+    <pre><span class="hl-k">policy-map type inspect dns</span> preset_dns_map
+  <span class="hl-k">parameters</span>
+   <span class="hl-k">message-length maximum</span> <span class="hl-v">512</span>
+<span class="hl-k">policy-map</span> global_policy
+  <span class="hl-k">class</span> inspection_default
+   <span class="hl-k">inspect dns</span> preset_dns_map
+   <span class="hl-k">inspect ftp</span>
+   <span class="hl-k">inspect tftp</span>
+<span class="hl-k">service-policy</span> global_policy <span class="hl-k">global</span></pre>
+    <p>Stateful deep-packet inspection is enabled for DNS (512-byte limit), FTP (including PORT command fixup), and TFTP globally on both firewalls.</p>
+  </div>
+
+  <div class="subsection">
+    <div class="subsection-title">EtherChannel — Core Redundancy Link</div>
+    <p>HQ-MLSW1 Fa0/23 &amp; Fa0/24 and HQ-MLSW2 Fa0/23 &amp; Fa0/24 form a <strong>LACP EtherChannel (Port-channel 1)</strong> — MLSW1 is configured as <code>active</code>, MLSW2 as <code>passive</code>. Mode: 802.1Q trunk. This provides both redundancy and bandwidth aggregation between the two core switches.</p>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════ S8 SECURITY -->
+<section class="section" id="s8">
+  <div class="section-header">
+    <span class="section-num">08</span>
+    <h2 class="section-title">Security Configuration Summary</h2>
+  </div>
+
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Feature</th><th>Status</th><th>Devices</th><th>Notes</th></tr></thead>
+      <tbody>
+        <tr><td>SSH v2 (management)</td><td><span class="tag tag-green">Enabled</span></td><td>All managed switches</td><td>RSA key via <code>ip ssh version 2</code> + domain-name</td></tr>
+        <tr><td>Enable password</td><td><span class="tag tag-orange">Encrypted (Type-7)</span></td><td>All switches</td><td>Type-7 is reversible — not secure in production</td></tr>
+        <tr><td>Service password-encryption</td><td><span class="tag tag-green">Enabled</span></td><td>Managed switches</td><td>Applies Type-7 to all plaintext passwords</td></tr>
+        <tr><td>VTY ACL (ACL 2)</td><td><span class="tag tag-green">Enabled</span></td><td>All switches</td><td>Restricts to 192.168.10.0/24 (OOB mgmt network)</td></tr>
+        <tr><td>Console timeout</td><td><span class="tag tag-green">3 min</span></td><td>All switches</td><td><code>exec-timeout 3 0</code></td></tr>
+        <tr><td>Port-security</td><td><span class="tag tag-green">Enabled</span></td><td>Sw1 access ports</td><td>Sticky MAC, max 2, violation restrict</td></tr>
+        <tr><td>BPDUguard + Portfast</td><td><span class="tag tag-green">Enabled</span></td><td>All access ports</td><td>Prevents STP manipulation / rogue switches</td></tr>
+        <tr><td>ASA Stateful FW</td><td><span class="tag tag-green">Active</span></td><td>FW1, FW2</td><td>Dual-FW, OSPF-aware, inspect DNS/FTP/TFTP</td></tr>
+        <tr><td>NAT Overload (PAT)</td><td><span class="tag tag-green">Active</span></td><td>Gate-HQ</td><td>Hides internal addressing from Internet</td></tr>
+        <tr><td>Banner MOTD</td><td><span class="tag tag-green">Set</span></td><td>All switches</td><td>"TRUY CP TRI PHP" (Vietnamese: Access Control)</td></tr>
+        <tr><td>IPSec VPN</td><td><span class="tag tag-red">Incomplete</span></td><td>Gate-HQ</td><td>Config present, ACL 150 missing, peer unreachable</td></tr>
+        <tr><td>No IP domain-lookup</td><td><span class="tag tag-green">Enabled</span></td><td>All switches</td><td>Prevents DNS lookup delays on mistyped commands</td></tr>
+        <tr><td>ASA FW_LINK interface</td><td><span class="tag tag-blue">Security-70</span></td><td>FW1 ↔ FW2</td><td>Dedicated FW-to-FW link at security level 70</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="callout warn">
+    <div class="callout-label">Recommendations</div>
+    <ul style="margin:0; padding-left:18px;">
+      <li>Replace Type-7 password encryption with <code>enable secret</code> (MD5/SHA) on all devices.</li>
+      <li>Verify the management subnet <code>192.168.10.0/24</code> is reachable or update ACL 2 to a valid OOB network.</li>
+      <li>Complete or remove the IPSec crypto map on Gate-HQ (define ACL 150 or remove the incomplete map).</li>
+      <li>Restrict the ASA OUTSIDE ACL source addresses for CAPWAP/LWAPP to known WLC peer IPs only.</li>
+      <li>Consider adding HTTPS (TCP/443) to the FW ACL if web services require TLS.</li>
+    </ul>
+  </div>
+</section>
+
+</main>
+
+<footer>
+  <span>CMDT A5.pkt · Network Analysis Report · June 2026</span>
+  <span>Generated by NetPilot · Confidential</span>
+</footer>
+
+</body>
+</html>

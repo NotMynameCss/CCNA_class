@@ -1,0 +1,836 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>CMDT A5 — Network Technology Audit</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --bg: #fafaf9;
+    --bg2: #f4f3f1;
+    --fg: #1c1917;
+    --muted: #78716c;
+    --accent: #b45309;
+    --accent2: #d97706;
+    --ok: #15803d;
+    --ok-bg: #f0fdf4;
+    --ok-border: #86efac;
+    --warn: #b45309;
+    --warn-bg: #fffbeb;
+    --warn-border: #fcd34d;
+    --miss: #be123c;
+    --miss-bg: #fff1f2;
+    --miss-border: #fda4af;
+    --partial: #1d4ed8;
+    --partial-bg: #eff6ff;
+    --partial-border: #93c5fd;
+    --border: #e7e5e4;
+    --font: 'Plus Jakarta Sans', sans-serif;
+    --mono: 'JetBrains Mono', monospace;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { font-size: 15px; }
+  body {
+    font-family: var(--font);
+    background: var(--bg);
+    color: var(--fg);
+    line-height: 1.6;
+    padding: 0 0 60px;
+  }
+
+  /* HEADER */
+  .page-header {
+    background: #1c1917;
+    color: #fafaf9;
+    padding: 36px 32px 28px;
+    border-bottom: 4px solid var(--accent);
+  }
+  .page-header .label {
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--accent2);
+    margin-bottom: 8px;
+    font-family: var(--mono);
+  }
+  .page-header h1 {
+    font-size: 1.9rem;
+    font-weight: 800;
+    line-height: 1.15;
+    color: #fafaf9;
+    margin-bottom: 10px;
+  }
+  .page-header .meta {
+    font-size: 0.82rem;
+    color: #a8a29e;
+    font-family: var(--mono);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 18px;
+  }
+  .page-header .meta span::before { content: '→ '; color: var(--accent2); }
+
+  /* SCORE BAR */
+  .score-section {
+    background: var(--bg2);
+    border-bottom: 1px solid var(--border);
+    padding: 20px 32px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    align-items: center;
+  }
+  .score-pill {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 7px 14px;
+    font-size: 0.82rem;
+    font-weight: 600;
+  }
+  .score-pill .dot {
+    width: 9px; height: 9px; border-radius: 50%;
+    flex-shrink: 0;
+  }
+  .dot-ok { background: var(--ok); }
+  .dot-partial { background: var(--partial); }
+  .dot-miss { background: var(--miss); }
+  .score-pill .count { font-family: var(--mono); font-weight: 700; font-size: 1rem; }
+  .score-pill .ok-count { color: var(--ok); }
+  .score-pill .partial-count { color: var(--partial); }
+  .score-pill .miss-count { color: var(--miss); }
+
+  /* SECTION */
+  .section {
+    padding: 28px 32px 0;
+    animation: fadeUp 0.4s ease both;
+  }
+  .section:nth-child(2) { animation-delay: 0.05s; }
+  .section:nth-child(3) { animation-delay: 0.10s; }
+  .section:nth-child(4) { animation-delay: 0.15s; }
+  .section:nth-child(5) { animation-delay: 0.20s; }
+  .section:nth-child(6) { animation-delay: 0.25s; }
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(12px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .section-title {
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.13em;
+    text-transform: uppercase;
+    color: var(--muted);
+    font-family: var(--mono);
+    margin-bottom: 14px;
+    padding-bottom: 6px;
+    border-bottom: 1px solid var(--border);
+  }
+  .section-h2 {
+    font-size: 1.25rem;
+    font-weight: 800;
+    color: var(--fg);
+    margin-bottom: 4px;
+    margin-top: -2px;
+  }
+  .section-sub {
+    font-size: 0.82rem;
+    color: var(--muted);
+    margin-bottom: 18px;
+  }
+
+  /* TABLE */
+  .tech-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.82rem;
+    margin-bottom: 28px;
+  }
+  .tech-table th {
+    text-align: left;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    color: var(--muted);
+    font-family: var(--mono);
+    border-bottom: 2px solid var(--border);
+    padding: 8px 10px;
+    background: var(--bg);
+    position: sticky;
+    top: 0;
+  }
+  .tech-table td {
+    padding: 9px 10px;
+    border-bottom: 1px solid var(--border);
+    vertical-align: top;
+  }
+  .tech-table tr:nth-child(even) td { background: var(--bg2); }
+  .tech-table tr:hover td { background: #f0ede9; }
+  .tech-name {
+    font-weight: 600;
+    color: var(--fg);
+    min-width: 180px;
+  }
+  .tech-detail {
+    color: var(--muted);
+    font-size: 0.78rem;
+    font-family: var(--mono);
+    line-height: 1.5;
+  }
+
+  /* STATUS BADGES */
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    border-radius: 4px;
+    padding: 2px 8px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    white-space: nowrap;
+    font-family: var(--mono);
+  }
+  .badge-present {
+    background: var(--ok-bg);
+    color: var(--ok);
+    border: 1px solid var(--ok-border);
+  }
+  .badge-partial {
+    background: var(--partial-bg);
+    color: var(--partial);
+    border: 1px solid var(--partial-border);
+  }
+  .badge-missing {
+    background: var(--miss-bg);
+    color: var(--miss);
+    border: 1px solid var(--miss-border);
+  }
+  .badge-note {
+    background: var(--warn-bg);
+    color: var(--warn);
+    border: 1px solid var(--warn-border);
+  }
+
+  /* ENTERPRISE STANDARDS GRID */
+  .std-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 28px;
+  }
+  @media (max-width: 540px) { .std-grid { grid-template-columns: 1fr; } }
+  .std-card {
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 13px 15px;
+    background: white;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 10px;
+  }
+  .std-card-left .std-name {
+    font-weight: 700;
+    font-size: 0.86rem;
+    color: var(--fg);
+  }
+  .std-card-left .std-desc {
+    font-size: 0.75rem;
+    color: var(--muted);
+    margin-top: 2px;
+    font-family: var(--mono);
+  }
+  .std-card.present { border-left: 3px solid var(--ok); }
+  .std-card.partial { border-left: 3px solid var(--partial); }
+  .std-card.missing { border-left: 3px solid var(--miss); }
+
+  /* SUMMARY BOX */
+  .summary-box {
+    background: #1c1917;
+    color: #fafaf9;
+    border-radius: 8px;
+    padding: 20px 22px;
+    margin: 28px 32px 32px;
+    font-size: 0.85rem;
+    line-height: 1.7;
+  }
+  .summary-box h3 {
+    font-size: 0.68rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--accent2);
+    font-family: var(--mono);
+    font-weight: 700;
+    margin-bottom: 10px;
+  }
+  .summary-box ul {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+  }
+  .summary-box li::before {
+    content: '▸ ';
+    color: var(--accent2);
+    font-weight: 700;
+  }
+  .summary-box .miss-item { color: #fda4af; }
+  .summary-box .ok-item { color: #86efac; }
+
+  /* DIVIDER */
+  .divider { height: 1px; background: var(--border); margin: 4px 32px 0; }
+
+  code {
+    font-family: var(--mono);
+    font-size: 0.78rem;
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    padding: 1px 5px;
+    color: var(--fg);
+  }
+</style>
+</head>
+<body>
+
+<header class="page-header">
+  <div class="label">Network Technology Audit Report</div>
+  <h1>CMDT A5.pkt — Enterprise Campus Analysis</h1>
+  <div class="meta">
+    <span>79 devices extracted</span>
+    <span>67 supported for re-export</span>
+    <span>OSPF Area 0 · Dual ASA · HSRP · EtherChannel</span>
+    <span>Audit Date: 2026-06-14</span>
+  </div>
+</header>
+
+<div class="score-section">
+  <div class="score-pill"><span class="dot dot-ok"></span><span class="count ok-count">29</span> Technologies Present</div>
+  <div class="score-pill"><span class="dot dot-partial"></span><span class="count partial-count">6</span> Partially Implemented</div>
+  <div class="score-pill"><span class="dot dot-miss"></span><span class="count miss-count">28</span> Not Detected</div>
+</div>
+
+<!-- ===================== SECTION 1 ===================== -->
+<div class="section">
+  <div class="section-title">Section 1 — Core Technologies</div>
+  <div class="section-h2">Foundational Protocols &amp; Services</div>
+  <div class="section-sub">VLANs, routing, ACLs, servers, firewalls, NAT, WAN</div>
+  <table class="tech-table">
+    <thead>
+      <tr>
+        <th>Technology</th>
+        <th>Status</th>
+        <th>Evidence / Notes</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td class="tech-name">VLANs</td>
+        <td><span class="badge badge-present">✓ Present</span></td>
+        <td class="tech-detail">VLANs 10, 20, 30, 70, 80, 90, 50, 199 configured across access switches (Sw1/Sw2/AC3/AC4/AC5). Access ports assigned per-VLAN; trunk uplinks to distribution.</td>
+      </tr>
+      <tr>
+        <td class="tech-name">VTP</td>
+        <td><span class="badge badge-missing">✗ Not Detected</span></td>
+        <td class="tech-detail">No <code>vtp domain</code> or <code>vtp mode</code> commands found in any switch config. VLAN config is applied statically per-switch.</td>
+      </tr>
+      <tr>
+        <td class="tech-name">OSPF (Dynamic Routing)</td>
+        <td><span class="badge badge-present">✓ Present</span></td>
+        <td class="tech-detail">OSPFv2 process 15, single Area 0, running on HQ-MLSW1, HQ-MLSW2, DIS1–DIS5, Gate-HQ, HQ-FW1, HQ-FW2, Router3. Multiple router-IDs defined. Redistributed static on Gate-HQ.</td>
+      </tr>
+      <tr>
+        <td class="tech-name">EIGRP</td>
+        <td><span class="badge badge-missing">✗ Not Detected</span></td>
+        <td class="tech-detail">No EIGRP configuration found in any device.</td>
+      </tr>
+      <tr>
+        <td class="tech-name">RIPv2</td>
+        <td><span class="badge badge-missing">✗ Not Detected</span></td>
+        <td class="tech-detail">No RIP configuration found in any device.</td>
+      </tr>
+      <tr>
+        <td class="tech-name">ACL — Standard</td>
+        <td><span class="badge badge-present">✓ Present</span></td>
+        <td class="tech-detail"><code>access-list 2 permit 192.168.10.0 0.0.0.255 / deny any</code> applied to VTY lines (<code>access-class 2 in</code>) on all managed switches and HQ-MLSW1/2 — restricts SSH management access.</td>
+      </tr>
+      <tr>
+        <td class="tech-name">ACL — Extended</td>
+        <td><span class="badge badge-present">✓ Present</span></td>
+        <td class="tech-detail"><code>ip access-list extended NAT_HQ</code> on Gate-HQ (permits ICMP/UDP/TCP for HTTP, FTP, SMTP, DHCP, DNS, WLC CAPWAP). Named extended ACLs on HQ-FW1 and HQ-FW2 as <code>RES-ACCESS</code>.</td>
+      </tr>
+      <tr>
+        <td class="tech-name">Named ACL</td>
+        <td><span class="badge badge-present">✓ Present</span></td>
+        <td class="tech-detail"><code>NAT_HQ</code> (Gate-HQ), <code>RES-ACCESS</code> (HQ-FW1, HQ-FW2) — both named extended ACLs applied inbound on OUTSIDE interfaces.</td>
+      </tr>
+      <tr>
+        <td class="tech-name">Server Farm / Data Center</td>
+        <td><span class="badge badge-present">✓ Present</span></td>
+        <td class="tech-detail">DMZ-SW (Switch1(1)(1)) hosts 7 servers: DNS (10.200.200.7), DHCP-1 (10.200.200.5), DHCP-2 (10.200.200.6), Server0–4 (10.200.200.8–12). All on /27 subnet <code>10.200.200.0/27</code>. Gateway at HQ-MLSW1 Fa0/8 (10.200.200.1).</td>
+      </tr>
+      <tr>
+        <td class="tech-name">DMZ</td>
+        <td><span class="badge badge-present">✓ Present</span></td>
+        <td class="tech-detail">ASA HQ-FW1 interface <code>GigabitEthernet1/2 nameif INSIDE2 / security-level 100</code> connects HQ-MLSW2 to FW1; server segment sits between firewalls. DMZ-SW is logically behind the firewall pair.</td>
+      </tr>
+      <tr>
+        <td class="tech-name">WAN</td>
+        <td><span class="badge badge-present">✓ Present</span></td>
+        <td class="tech-detail">Serial WAN link: Internet (ISP) Serial0/0/0 <code>20.20.20.2/30</code> ↔ Gate-HQ Serial0/1/0 <code>20.20.20.1/30</code>. Clock rate 2000000. Additional serial interfaces configured on Gate-HQ (10.0.10.x, 10.0.20.x).</td>
+      </tr>
+      <tr>
+        <td class="tech-name">Firewall</td>
+        <td><span class="badge badge-present">✓ Present</span></td>
+        <td class="tech-detail">Dual ASA 5506-X: HQ-FW1 (router-id 3.2.4.1) and HQ-FW2 (router-id 3.2.5.1), interconnected via <code>FW_LINK</code> interface (10.1.255.21/22). Security levels: INSIDE=100, FW_LINK=70, OUTSIDE=0. Service policies with DNS/FTP/TFTP inspection.</td>
+      </tr>
+      <tr>
+        <td class="tech-name">NAT — Overload (PAT)</td>
+        <td><span class="badge badge-present">✓ Present</span></td>
+        <td class="tech-detail"><code>ip nat inside source list NAT_HQ interface Serial0/1/0 overload</code> on Gate-HQ. Inside: Gi0/0 and Gi0/1 (<code>ip nat inside</code>). Outside: Serial0/1/0 (<code>ip nat outside</code>).</td>
+      </tr>
+      <tr>
+        <td class="tech-name">NAT — Static</td>
+        <td><span class="badge badge-missing">✗ Not Detected</span></td>
+        <td class="tech-detail">No <code>ip nat inside source static</code> entries found. Only dynamic overload NAT is configured.</td>
+      </tr>
+      <tr>
+        <td class="tech-name">NAT — Dynamic (Pool)</td>
+        <td><span class="badge badge-missing">✗ Not Detected</span></td>
+        <td class="tech-detail">No <code>ip nat pool</code> commands found. NAT is PAT/overload only.</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="divider"></div>
+
+<!-- ===================== SECTION 2 ===================== -->
+<div class="section">
+  <div class="section-title">Section 2 — Advanced Technologies</div>
+  <div class="section-h2">Enterprise Feature Evaluation</div>
+  <div class="section-sub">Spanning tree, redundancy, security, routing protocols, VPN, wireless, voice, QoS, IPv6</div>
+
+  <table class="tech-table">
+    <thead>
+      <tr><th>Technology</th><th>Status</th><th>Evidence / Notes</th></tr>
+    </thead>
+    <tbody>
+
+      <!-- STP GROUP -->
+      <tr>
+        <td class="tech-name">PVST+</td>
+        <td><span class="badge badge-present">✓ Present</span></td>
+        <td class="tech-detail"><code>spanning-tree mode pvst</code> on all switches (2960s and 3560s). Default PVST+ across all VLANs.</td>
+      </tr>
+      <tr>
+        <td class="tech-name">Rapid PVST+</td>
+        <td><span class="badge badge-missing">✗ Not Detected</span></td>
+        <td class="tech-detail">No <code>spanning-tree mode rapid-pvst</code> found. Only classic PVST+ in use.</td>
+      </tr>
+      <tr>
+        <td class="tech-name">Root Bridge Primary / Secondary</td>
+        <td><span class="badge badge-missing">✗ Not Detected</span></td>
+        <td class="tech-detail">No <code>spanning-tree vlan X root primary/secondary</code> or <code>spanning-tree vlan X priority</code> commands found.</td>
+      </tr>
+      <tr>
+        <td class="tech-name">PortFast</td>
+        <td><span class="badge badge-present">✓ Present</span></td>
+        <td class="tech-detail"><code>spanning-tree portfast</code> on all access ports in Sw1, Sw2, AC3, AC4, AC5 (Fa0/3–Fa0/24 on each). Also on DMZ-SW server ports.</td>
+      </tr>
+      <tr>
+        <td class="tech-name">BPDU Guard</td>
+        <td><span class="badge badge-present">✓ Present</span></td>
+        <td class="tech-detail"><code>spanning-tree bpduguard enable</code> configured alongside PortFast on all access ports across Sw1, Sw2, AC3, AC4, AC5, DMZ-SW.</td>
+      </tr>
+      <tr>
+        <td class="tech-name">Root Guard</td>
+        <td><span class="badge badge-missing">✗ Not Detected</span></td>
+        <td class="tech-detail">No <code>spanning-tree guard root</code> found on any uplink port.</td>
+      </tr>
+
+      <!-- ETHERCHANNEL / VTP / DTP -->
+      <tr>
+        <td class="tech-name">EtherChannel — LACP</td>
+        <td><span class="badge badge-present">✓ Present</span></td>
+        <td class="tech-detail">HQ-MLSW1 Fa0/23–24: <code>channel-group 1 mode active</code>. HQ-MLSW2 Fa0/23–24: <code>channel-group 1 mode passive</code>. LACP Port-channel1 trunk between the two core switches.</td>
+      </tr>
+      <tr>
+        <td class="tech-name">EtherChannel — PAgP</td>
+        <td><span class="badge badge-missing">✗ Not Detected</span></td>
+        <td class="tech-detail">No <code>channel-group X mode desirable/auto</code> found. Only LACP is used.</td>
+      </tr>
+      <tr>
+        <td class="tech-name">VTP</td>
+        <td><span class="badge badge-missing">✗ Not Detected</span></td>
+        <td class="tech-detail">No VTP domain, mode, or version commands found. VLANs configured statically per switch.</td>
+      </tr>
+      <tr>
+        <td class="tech-name">DTP</td>
+        <td><span class="badge badge-missing">✗ Not Detected</span></td>
+        <td class="tech-detail">No explicit <code>switchport nonegotiate</code> or DTP mode commands. Trunk ports use <code>switchport mode trunk</code> (static).</td>
+      </tr>
+
+      <!-- HSRP -->
+      <tr>
+        <td class="tech-name">HSRP</td>
+        <td><span class="badge badge-present">✓ Present</span></td>
+        <td class="tech-detail">HSRP configured on distribution switches: DIS1 + DIS2 share <code>standby 10 ip 10.1.10.1</code> and <code>standby 70 ip 10.1.70.1</code>; DIS3 + DIS4 share <code>standby 20 ip 10.1.20.1</code> / <code>standby 80 ip 10.1.80.1</code>; DIS5 + DIS6 share <code>standby 30 ip 10.1.30.1</code> / <code>standby 90 ip 10.1.90.1</code>.</td>
+      </tr>
+      <tr>
+        <td class="tech-name">HSRP Preempt / Tracking</td>
+        <td><span class="badge badge-missing">✗ Not Detected</span></td>
+        <td class="tech-detail">No <code>standby X preempt</code> or <code>standby X track</code> commands found on any distribution switch. Basic HSRP only.</td>
+      </tr>
+
+      <!-- STATIC / SLA / ECMP -->
+      <tr>
+        <td class="tech-name">Floating Static Route</td>
+        <td><span class="badge badge-present">✓ Present</span></td>
+        <td class="tech-detail">HQ-MLSW1: <code>ip route 0.0.0.0 0.0.0.0 10.1.255.14 10</code> (AD=10, floating) + <code>ip route 0.0.0.0 0.0.0.0 10.20.20.6</code> (AD=1, primary). Gate-HQ: <code>ip route 0.0.0.0 0.0.0.0 Serial0/1/0</code>.</td>
+      </tr>
+      <tr>
+        <td class="tech-name">ECMP (Equal-Cost Multi-Path)</td>
+        <td><span class="badge badge-partial">~ Partial</span></td>
+        <td class="tech-detail">OSPF with dual uplinks from each distribution to both HQ-MLSW1 and HQ-MLSW2 creates ECMP paths implicitly. No explicit <code>maximum-paths</code> tuning found. Dual default routes on MLSW1 are AD-based (not equal-cost).</td>
+      </tr>
+      <tr>
+        <td class="tech-name">IP SLA</td>
+        <td><span class="badge badge-missing">✗ Not Detected</span></td>
+        <td class="tech-detail">No <code>ip sla</code> configuration found in any device.</td>
+      </tr>
+
+      <!-- OSPF DETAIL -->
+      <tr>
+        <td class="tech-name">OSPF Single-Area</td>
+        <td><span class="badge badge-present">✓ Present</span></td>
+        <td class="tech-detail">All OSPF routers/switches participate in Area 0 only. Process 15 used consistently. Redistribution of static on Gate-HQ (<code>redistribute static subnets</code>).</td>
+      </tr>
+      <tr>
+        <td class="tech-name">OSPF Multi-Area</td>
+        <td><span class="badge badge-missing">✗ Not Detected</span></td>
+        <td class="tech-detail">Only Area 0 is used. No Area 1+ or inter-area LSAs present.</td>
+      </tr>
+      <tr>
+        <td class="tech-name">OSPF Redistribution</td>
+        <td><span class="badge badge-present">✓ Present</span></td>
+        <td class="tech-detail">Gate-HQ: <code>redistribute static subnets</code> into OSPF 15 + <code>default-information originate</code>.</td>
+      </tr>
+      <tr>
+        <td class="tech-name">OSPF Summarization</td>
+        <td><span class="badge badge-missing">✗ Not Detected</span></td>
+        <td class="tech-detail">No <code>area X range</code> or <code>summary-address</code> commands found.</td>
+      </tr>
+      <tr>
+        <td class="tech-name">OSPF Passive Interface</td>
+        <td><span class="badge badge-missing">✗ Not Detected</span></td>
+        <td class="tech-detail">No <code>passive-interface</code> in any OSPF process.</td>
+      </tr>
+
+      <!-- INTERVLAN / ROAS -->
+      <tr>
+        <td class="tech-name">Inter-VLAN Routing — SVI</td>
+        <td><span class="badge badge-present">✓ Present</span></td>
+        <td class="tech-detail">All 6 distribution 3560-24PS switches use SVIs: e.g. <code>interface Vlan10</code> on DIS1/DIS2, <code>Vlan20/80</code> on DIS3/DIS4, <code>Vlan30/90</code> on DIS5/DIS6. <code>ip routing</code> enabled.</td>
+      </tr>
+      <tr>
+        <td class="tech-name">Inter-VLAN Routing — Routed Port</td>
+        <td><span class="badge badge-present">✓ Present</span></td>
+        <td class="tech-detail">HQ-MLSW1 and HQ-MLSW2 use <code>no switchport</code> on Fa0/1–Fa0/9 — all P2P routed ports (/30 subnets) connecting to firewalls and distribution switches.</td>
+      </tr>
+      <tr>
+        <td class="tech-name">Router-on-a-Stick</td>
+        <td><span class="badge badge-partial">~ Partial</span></td>
+        <td class="tech-detail">Router3 has <code>interface GigabitEthernet0/1.80 encapsulation dot1Q 80 / ip address 10.1.80.1</code> — a RoaS sub-interface for VLAN 80. Sub-interface 0/1.20 is present but unconfigured.</td>
+      </tr>
+
+      <!-- PORT SECURITY / DHCP SNOOP -->
+      <tr>
+        <td class="tech-name">Port Security</td>
+        <td><span class="badge badge-present">✓ Present</span></td>
+        <td class="tech-detail">Switch Sw1 (101): <code>switchport port-security maximum 2 / mac-address sticky / violation restrict</code> on Fa0/3–Fa0/9. Sticky MACs learned (e.g. 0060.2FC8.5D47). Not configured on AC3, AC4, AC5.</td>
+      </tr>
+      <tr>
+        <td class="tech-name">DHCP Snooping</td>
+        <td><span class="badge badge-missing">✗ Not Detected</span></td>
+        <td class="tech-detail">No <code>ip dhcp snooping</code> commands found on any switch.</td>
+      </tr>
+      <tr>
+        <td class="tech-name">Dynamic ARP Inspection (DAI)</td>
+        <td><span class="badge badge-missing">✗ Not Detected</span></td>
+        <td class="tech-detail">No <code>ip arp inspection</code> commands found.</td>
+      </tr>
+      <tr>
+        <td class="tech-name">IP Source Guard</td>
+        <td><span class="badge badge-missing">✗ Not Detected</span></td>
+        <td class="tech-detail">No <code>ip verify source</code> commands found.</td>
+      </tr>
+
+      <!-- FIREWALL / NAT ADVANCED -->
+      <tr>
+        <td class="tech-name">Zone-Based Firewall</td>
+        <td><span class="badge badge-missing">✗ Not Detected</span></td>
+        <td class="tech-detail">ASA uses classic interface-based security levels, not Cisco IOS ZBF (<code>zone security</code>). No ZBF policy maps found.</td>
+      </tr>
+      <tr>
+        <td class="tech-name">Port Forwarding (Static NAT)</td>
+        <td><span class="badge badge-missing">✗ Not Detected</span></td>
+        <td class="tech-detail">No port-forwarding or static NAT entries on any device.</td>
+      </tr>
+
+      <!-- VPN -->
+      <tr>
+        <td class="tech-name">IPsec VPN / Site-to-Site VPN</td>
+        <td><span class="badge badge-partial">~ Partial / Incomplete</span></td>
+        <td class="tech-detail">Gate-HQ has IPsec config: <code>crypto isakmp policy 10</code> (AES, pre-share, group 5), peer <code>30.30.30.1</code>, transform-set <code>GRE-SET</code> (esp-3des, esp-sha-hmac), <code>crypto map GRE-MAP</code>. Marked <em>! Incomplete</em> — no ACL 150 defined, peer unreachable in topology.</td>
+      </tr>
+      <tr>
+        <td class="tech-name">GRE Tunnel</td>
+        <td><span class="badge badge-missing">✗ Not Detected</span></td>
+        <td class="tech-detail">No <code>interface Tunnel</code> configured. Transform-set is named "GRE-SET" but no actual GRE tunnel interface exists.</td>
+      </tr>
+
+      <!-- PPP / FR / BGP -->
+      <tr>
+        <td class="tech-name">PPP / CHAP / PAP</td>
+        <td><span class="badge badge-missing">✗ Not Detected</span></td>
+        <td class="tech-detail">No <code>encapsulation ppp</code> on serial interfaces. Default HDLC encapsulation assumed.</td>
+      </tr>
+      <tr>
+        <td class="tech-name">Frame Relay</td>
+        <td><span class="badge badge-missing">✗ Not Detected</span></td>
+        <td class="tech-detail">No Frame Relay encapsulation or DLCI configuration found.</td>
+      </tr>
+      <tr>
+        <td class="tech-name">BGP</td>
+        <td><span class="badge badge-missing">✗ Not Detected</span></td>
+        <td class="tech-detail">No <code>router bgp</code> configuration on any device.</td>
+      </tr>
+
+      <!-- WIRELESS -->
+      <tr>
+        <td class="tech-name">WLC / Lightweight AP / CAPWAP</td>
+        <td><span class="badge badge-partial">~ Partial (Substituted)</span></td>
+        <td class="tech-detail">Wireless LAN Controller0 (WLC-PT) + Light Weight Access Point0 (LAP-PT) present in original file — connected to Switch0. Both are unsupported for re-export. Cameras (CAM-02 series) were IoT MCU components on VLAN access ports. CAPWAP ports (UDP 5246, 5247) are permitted in FW ACLs.</td>
+      </tr>
+      <tr>
+        <td class="tech-name">WPA2 Enterprise / RADIUS / TACACS+</td>
+        <td><span class="badge badge-missing">✗ Not Detected</span></td>
+        <td class="tech-detail">No RADIUS or TACACS+ server config. No AAA commands. No WPA2 Enterprise SSID. SSH is local-auth only (<code>login local</code>).</td>
+      </tr>
+
+      <!-- SERVICES -->
+      <tr>
+        <td class="tech-name">DHCP Relay (ip helper-address)</td>
+        <td><span class="badge badge-present">✓ Present</span></td>
+        <td class="tech-detail">All SVI interfaces on DIS1–DIS6 have dual <code>ip helper-address</code>: 10.200.200.6 (DHCP-2) and 10.200.200.5 (DHCP-1). Router3 Gi0/1.80 also has <code>ip helper-address 10.200.200.8</code>.</td>
+      </tr>
+      <tr>
+        <td class="tech-name">DHCP Server</td>
+        <td><span class="badge badge-present">✓ Present</span></td>
+        <td class="tech-detail">DHCP-1 and DHCP-2 (Server-PT) each host 7 pools: serverPool + VLAN10/20/30/70/80/90. Pools define gateway, start IP, DNS server (10.200.200.7), and 200 max leases.</td>
+      </tr>
+      <tr>
+        <td class="tech-name">DNS</td>
+        <td><span class="badge badge-present">✓ Present</span></td>
+        <td class="tech-detail">DNS Server-PT at 10.200.200.7. Referenced as DNS server in all DHCP pools and server static configs. <code>no ip domain-lookup</code> on all managed switches.</td>
+      </tr>
+      <tr>
+        <td class="tech-name">SSH / Management Security</td>
+        <td><span class="badge badge-present">✓ Present</span></td>
+        <td class="tech-detail"><code>ip ssh version 2</code>, <code>ip domain-name cisco.com</code> on all managed switches. VTY lines: <code>transport input ssh</code>, <code>login local</code>, <code>access-class 2 in</code>. Console timeout: <code>exec-timeout 3 0</code>. MOTD banner on all devices.</td>
+      </tr>
+      <tr>
+        <td class="tech-name">Syslog / SNMP / NTP</td>
+        <td><span class="badge badge-missing">✗ Not Detected</span></td>
+        <td class="tech-detail">No <code>logging</code>, <code>snmp-server</code>, or <code>ntp server</code> commands found in any device config.</td>
+      </tr>
+      <tr>
+        <td class="tech-name">AAA</td>
+        <td><span class="badge badge-missing">✗ Not Detected</span></td>
+        <td class="tech-detail">No <code>aaa new-model</code> or AAA method lists configured.</td>
+      </tr>
+
+      <!-- VOICE -->
+      <tr>
+        <td class="tech-name">Voice VLAN / CME / Telephony Service</td>
+        <td><span class="badge badge-missing">✗ Not Detected</span></td>
+        <td class="tech-detail">No <code>telephony-service</code>, <code>ephone</code>, or <code>voice vlan</code> commands. No IP phones in topology.</td>
+      </tr>
+      <tr>
+        <td class="tech-name">DHCP Option 150</td>
+        <td><span class="badge badge-missing">✗ Not Detected</span></td>
+        <td class="tech-detail">No TFTP server option for IP phone boot in any DHCP config.</td>
+      </tr>
+
+      <!-- QoS -->
+      <tr>
+        <td class="tech-name">QoS / AutoQoS / DSCP</td>
+        <td><span class="badge badge-missing">✗ Not Detected</span></td>
+        <td class="tech-detail">No <code>policy-map</code> (except ASA inspection), no <code>service-policy</code> (except ASA global), no <code>dscp</code> marking, no <code>auto qos</code> commands on any router or switch.</td>
+      </tr>
+
+      <!-- IPv6 -->
+      <tr>
+        <td class="tech-name">IPv6 (any)</td>
+        <td><span class="badge badge-missing">✗ Not Detected</span></td>
+        <td class="tech-detail"><code>no ipv6 cef</code> on routers. No IPv6 addresses, OSPFv3, DHCPv6, SLAAC, or IPv6 ACLs configured anywhere. IPv6 disabled on all interfaces (<code>IPV6_ENABLED=false</code>).</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="divider"></div>
+
+<!-- ===================== SECTION 3 ===================== -->
+<div class="section">
+  <div class="section-title">Section 3 — Enterprise Standards Verification</div>
+  <div class="section-h2">Campus Architecture Compliance</div>
+  <div class="section-sub">14 enterprise design standards evaluated</div>
+
+  <div class="std-grid">
+
+    <div class="std-card missing">
+      <div class="std-card-left">
+        <div class="std-name">SD-WAN</div>
+        <div class="std-desc">Software-defined WAN overlay</div>
+      </div>
+      <span class="badge badge-missing">✗ Missing</span>
+    </div>
+
+    <div class="std-card present">
+      <div class="std-card-left">
+        <div class="std-name">Dual Core (ECMP)</div>
+        <div class="std-desc">HQ-MLSW1 + HQ-MLSW2 · LACP Port-channel · Dual uplinks</div>
+      </div>
+      <span class="badge badge-present">✓ Present</span>
+    </div>
+
+    <div class="std-card present">
+      <div class="std-card-left">
+        <div class="std-name">Dual Distribution (HSRP)</div>
+        <div class="std-desc">3 pairs of 3560-24PS with HSRP per VLAN</div>
+      </div>
+      <span class="badge badge-present">✓ Present</span>
+    </div>
+
+    <div class="std-card missing">
+      <div class="std-card-left">
+        <div class="std-name">Route Summarization</div>
+        <div class="std-desc">No area range or summary-address</div>
+      </div>
+      <span class="badge badge-missing">✗ Missing</span>
+    </div>
+
+    <div class="std-card partial">
+      <div class="std-card-left">
+        <div class="std-name">VPN</div>
+        <div class="std-desc">IPsec IKE policy present but incomplete · No GRE tunnel</div>
+      </div>
+      <span class="badge badge-partial">~ Partial</span>
+    </div>
+
+    <div class="std-card present">
+      <div class="std-card-left">
+        <div class="std-name">DHCP</div>
+        <div class="std-desc">Dual server-PT · 7 pools · ip helper-address on all SVIs</div>
+      </div>
+      <span class="badge badge-present">✓ Present</span>
+    </div>
+
+    <div class="std-card present">
+      <div class="std-card-left">
+        <div class="std-name">ACL</div>
+        <div class="std-desc">Standard + Extended + Named on FW, router, VTY lines</div>
+      </div>
+      <span class="badge badge-present">✓ Present</span>
+    </div>
+
+    <div class="std-card present">
+      <div class="std-card-left">
+        <div class="std-name">DMZ</div>
+        <div class="std-desc">Server farm behind dual ASA firewalls with security zones</div>
+      </div>
+      <span class="badge badge-present">✓ Present</span>
+    </div>
+
+    <div class="std-card present">
+      <div class="std-card-left">
+        <div class="std-name">Server Farm</div>
+        <div class="std-desc">9× Server-PT on DMZ-SW (10.200.200.0/27)</div>
+      </div>
+      <span class="badge badge-present">✓ Present</span>
+    </div>
+
+    <div class="std-card present">
+      <div class="std-card-left">
+        <div class="std-name">NAT</div>
+        <div class="std-desc">PAT overload via Serial0/1/0 on Gate-HQ</div>
+      </div>
+      <span class="badge badge-present">✓ Present</span>
+    </div>
+
+    <div class="std-card partial">
+      <div class="std-card-left">
+        <div class="std-name">Access Point</div>
+        <div class="std-desc">WLC-PT + LAP-PT present (unsupported for re-export) · IoT cameras on wired access ports</div>
+      </div>
+      <span class="badge badge-partial">~ Partial</span>
+    </div>
+
+    <div class="std-card partial">
+      <div class="std-card-left">
+        <div class="std-name">Port Security</div>
+        <div class="std-desc">Sticky MAC + restrict on Sw1 only · Missing on AC3/AC4/AC5</div>
+      </div>
+      <span class="badge badge-partial">~ Partial</span>
+    </div>
+
+    <div class="std-card present">
+      <div class="std-card-left">
+        <div class="std-name">Port Channel</div>
+        <div class="std-desc">LACP EtherChannel (active/passive) between HQ-MLSW1 and HQ-MLSW2</div>
+      </div>
+      <span class="badge badge-present">✓ Present</span>
+    </div>
+
+    <div class="std-card missing">
+      <div class="std-card-left">
+        <div class="std-name">QoS</div>
+        <div class="std-desc">No QoS policy maps, DSCP marking, or AutoQoS found</div>
+      </div>
+      <span class="badge badge-missing">✗ Missing</span>
+    </div>
+
+  </div>
+</div>
+
+<!-- ===================== SUMMARY ===================== -->
+<div class="summary-box">
+  <h3>Audit Summary &amp; Recommendations</h3>
+  <ul>
+    <li class="ok-item">Strong dual-core / dual-distribution design: HQ-MLSW1↔MLSW2 LACP EtherChannel + 3 HSRP-paired distribution pairs cover VLAN 10/20/30/70/80/90.</li>
+    <li class="ok-item">Comprehensive OSPF single-area deployment (process 15) with redistribution and default-information originate from Gate-HQ edge.</li>
+    <li class="ok-item">Dual ASA 5506-X firewall pair with FW_LINK interconnect, security levels, inspection policies, and named ACLs — solid perimeter design.</li>
+    <li class="ok-item">Dual DHCP servers (10.200.200.5/6) with redundant ip helper-address on all SVIs; dedicated DNS server (10.200.200.7).</li>
+    <li class="ok-item">PortFast + BPDU Guard on all access ports; SSH v2 with ACL-restricted VTY; password encryption on managed switches.</li>
+    <li class="miss-item">MISSING: HSRP Preempt &amp; Tracking — without preempt, the active router does not recover automatically after failover.</li>
+    <li class="miss-item">MISSING: Route Summarization — no area range or summary-address; every /24 and /30 floods the OSPF LSDB.</li>
+    <li class="miss-item">MISSING: DHCP Snooping + DAI + IP Source Guard — Layer 2 security hardening absent on all access switches.</li>
+    <li class="miss-item">MISSING: QoS — no traffic classification or DSCP marking; critical for real-world enterprise with voice/video.</li>
+    <li class="miss-item">MISSING: IPv6 — fully disabled everywhere; no dual-stack, SLAAC, DHCPv6, or OSPFv3.</li>
+    <li class="miss-item">MISSING: VPN completion — IPsec IKE/crypto map configured on Gate-HQ but marked Incomplete; ACL 150 undefined; no GRE tunnel interface.</li>
+    <li class="miss-item">MISSING: Rapid PVST+ — topology uses classic PVST+ (slower convergence); upgrade to rapid-pvst recommended.</li>
+    <li class="miss-item">MISSING: Root Bridge priority configuration — no explicit spanning-tree priority set; STP root election is non-deterministic.</li>
+    <li class="miss-item">MISSING: Syslog / NTP / SNMP — no centralized logging, time synchronization, or network monitoring configured.</li>
+  </ul>
+</div>
+
+</body>
+</html>
